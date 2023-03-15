@@ -29,7 +29,14 @@ export class ProfileService {
       throw new HttpException('Profile does not exist', HttpStatus.NOT_FOUND);
     }
 
-    return { ...user, following: false };
+    const follow = await this.followRepository.findOne({
+      where: { 
+        followerId: currentUserId,
+        followingId: user.id
+    },
+    });
+
+    return { ...user, following: Boolean(follow) };
   }
 
   async followProfile(
@@ -61,15 +68,14 @@ export class ProfileService {
     });
 
     if (!follow) {
-        const followToCreate = new FollowEntity()
-        followToCreate.followerId = currentUserId;
-        followToCreate.followingId = user.id;
-        await this.followRepository.save(followToCreate);
+      const followToCreate = new FollowEntity();
+      followToCreate.followerId = currentUserId;
+      followToCreate.followingId = user.id;
+      await this.followRepository.save(followToCreate);
     }
 
     return { ...user, following: true };
   }
-
 
   async unfollowProfile(
     currentUserId: number,
@@ -92,26 +98,10 @@ export class ProfileService {
       );
     }
 
-    const unfollow = await this.followRepository.findOne({
-      where: {
-        followerId: currentUserId,
-        followingId: user.id,
-      },
+    await this.followRepository.delete({
+      followerId: currentUserId,
+      followingId: user.id,
     });
-
-    if (unfollow) {
-        throw new HttpException(
-            'You are not following this user',
-            HttpStatus.BAD_REQUEST,
-            );
-    }
-
-    // if (!unfollow) {
-    //     const followToCreate = new FollowEntity()
-    //     followToCreate.followerId = currentUserId;
-    //     followToCreate.followingId = user.id;
-    //     await this.followRepository.save(followToCreate);
-    // }
 
     return { ...user, following: false };
   }

@@ -32,6 +32,15 @@ export class ArticleController {
     return await this.articleService.findAll(currentUserId, query);
   }
 
+  @Get('feed')
+  @UseGuards(AuthGuard)
+  async getFeed(
+    @User('id') currentUserId: number,
+    @Query() query: any,
+  ): Promise<ArticlesResponseInterface> {
+    return await this.articleService.getFeed(currentUserId, query);
+  }
+
   @Post()
   @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe())
@@ -81,15 +90,27 @@ export class ArticleController {
 
   @Post(':slug/favorite')
   @UseGuards(AuthGuard)
-  async addArticleToFavorite(@User('id') currentUserId:number, @Param('slug') slug: string): Promise<ArticleResponseInterface> {
-    const article = await this.articleService.addArticleToFavorites(slug, currentUserId);
+  async addArticleToFavorite(
+    @User('id') currentUserId: number,
+    @Param('slug') slug: string,
+  ): Promise<ArticleResponseInterface> {
+    const article = await this.articleService.addArticleToFavorites(
+      slug,
+      currentUserId,
+    );
     return this.articleService.buildArticleResponse(article);
   }
 
   @Delete(':slug/favorite')
   @UseGuards(AuthGuard)
-  async deleteArticleFromFavorite(@User('id') currentUserId:number, @Param('slug') slug: string): Promise<ArticleResponseInterface>{
-    const article = await this.articleService.deleteArticleFromFavorites(slug, currentUserId);
-    return this.articleService.buildArticleResponse(article)
+  async deleteArticleFromFavorite(
+    @User('id') currentUserId: number,
+    @Param('slug') slug: string,
+  ): Promise<ArticleResponseInterface> {
+    const article = await this.articleService.deleteArticleFromFavorites(
+      slug,
+      currentUserId,
+    );
+    return this.articleService.buildArticleResponse(article);
   }
 }
